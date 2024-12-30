@@ -16,11 +16,13 @@ const questionSet = [{options: ['Hyper Text ML', 'High Text Mark Low', 'Hyper Te
 
 
 const QuizPage = () => {
-    const [timeLeft, setTimeLeft] = useState(5);
+    const [timeLeft, setTimeLeft] = useState(10);
     const [summary, showSummary] = useState(false);
     const [stats, setStats] = useState({
         "correct": 0,
-        "wrong": 0
+        "attempted": 0,
+        "wrong": 0,
+        "total": questionSet.length
     });
     const [questions, setQuestions] = useState([]);
     const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -59,7 +61,8 @@ const QuizPage = () => {
                 setStats((prevState) => (
                     {
                         ...prevState,
-                        "correct": stats["correct"]+1
+                        "correct": stats["correct"]+1,
+                        "attempted": stats["attempted"]+1,
                     }
                 ));
                 setCorrectStatus(true);
@@ -67,7 +70,8 @@ const QuizPage = () => {
                 setStats((prevState) => (
                     {
                         ...prevState,
-                        "wrong": stats["wrong"]+1
+                        "wrong": stats["wrong"]+1,
+                        "attempted": stats["attempted"]+1,
                     }
                 ));
                 setCorrectStatus(false);
@@ -90,7 +94,7 @@ const QuizPage = () => {
     return (
         <div className={styles.quiz_body}>
             {summary ? (
-                <QuizStats quizTitle="Front End Quiz" correct={stats["correct"]} wrong={stats["wrong"]} />
+                <QuizStats quizTitle="Front End Quiz" stats={stats} />
 
             ) : 
             <div className={styles.quiz_card}>

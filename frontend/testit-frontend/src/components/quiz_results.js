@@ -23,22 +23,35 @@ const QuizStats = (props) => {
                 </div>
                 <hr id={styles.partition}/>
                 <Typography
-                            variant="h4"
+                            variant="h3"
+                            style={{
+                                textAlign: "center",
+                                marginTop: "10%",
+                                marginBottom: "15px",
+                                color: "blue",
+                                backgroundColor: "white"
+                                }}>
+                            Attempted : {props.stats.attempted}/{props.stats.total} question{props.stats.attempted > 1 && "s"}
+                    </Typography>
+                    <Typography
+                            variant="h3"
                             style={{
                                 textAlign: "center",
                                 marginTop: "15px",
-                                marginBottom: "15px"
+                                marginBottom: "15px",
+                                color: "green"
                                 }}>
-                            Correct : {props.correct} questions
+                            Correct : {props.stats.correct}/{props.stats.total} question{props.stats.correct > 1 && "s"}
                     </Typography>
                     <Typography
-                        variant="h4"
+                        variant="h3"
                         style={{
                             textAlign: "center",
                              marginTop: "15px",
-                            marginBottom: "15px"
+                            marginBottom: "10%",
+                            color: "red"
                         }}>
-                            Incorrect: {props.wrong} questions
+                            Incorrect: {props.stats.wrong}/{props.stats.total} question{props.stats.wrong > 1 && "s"}
                     </Typography>
                 <div className={styles.quiz_stats}>
                     <Button
