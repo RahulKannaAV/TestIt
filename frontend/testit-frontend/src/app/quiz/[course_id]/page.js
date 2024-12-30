@@ -3,6 +3,7 @@ import { Button, Typography } from "@mui/material";
 import {useState, useEffect} from "react";
 import axios from "axios";
 import styles from "./page.module.css";
+import QuizStats from "@/components/quiz_results";
 
 const questionSet = [{options: ['Hyper Text ML', 'High Text Mark Low', 'Hyper Text Markup Language', 'How To Make Lasagna'],
                     question: "What does HTML stand for?",
@@ -16,6 +17,7 @@ const questionSet = [{options: ['Hyper Text ML', 'High Text Mark Low', 'Hyper Te
 
 const QuizPage = () => {
     const [timeLeft, setTimeLeft] = useState(5);
+    const [summary, showSummary] = useState(false);
     const [stats, setStats] = useState({
         "correct": 0,
         "wrong": 0
@@ -33,6 +35,9 @@ const QuizPage = () => {
             setTimeLeft(timeLeft-1);
         }, 1000);
     }
+        else {
+            showSummary(true);
+        }
     }, [timeLeft]);
 
     const handleChoiceSelection = (evt) => {
@@ -51,8 +56,20 @@ const QuizPage = () => {
             setLockStatus(true);
             console.log("Fetching Correct Answer");
             if(chosen == questionSet[currentQuestion].correct_option) {
+                setStats((prevState) => (
+                    {
+                        ...prevState,
+                        "correct": stats["correct"]+1
+                    }
+                ));
                 setCorrectStatus(true);
             } else {
+                setStats((prevState) => (
+                    {
+                        ...prevState,
+                        "wrong": stats["wrong"]+1
+                    }
+                ));
                 setCorrectStatus(false);
             }
         }
@@ -65,13 +82,17 @@ const QuizPage = () => {
         if(currentQuestion < questionSet.length-1) {
         setCurrentQuestion(currentQuestion + 1);
         } else {
-            setCurrentQuestion(0);
+            showSummary(true);
         }
         console.log("Next Question");
     }
 
     return (
         <div className={styles.quiz_body}>
+            {summary ? (
+                <QuizStats quizTitle="Front End Quiz" correct={stats["correct"]} wrong={stats["wrong"]} />
+
+            ) : 
             <div className={styles.quiz_card}>
                 <div className={styles.quiz_header}>
                     <Typography 
@@ -131,7 +152,7 @@ const QuizPage = () => {
                     </Button>)}
                     
                 </div>
-            </div>
+            </div>}
         </div>
     )
 }
