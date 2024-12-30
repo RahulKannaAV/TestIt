@@ -1,5 +1,7 @@
 import logging
 import time
+from typing import List
+import ollama
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common import exceptions
@@ -40,18 +42,29 @@ def get_top_resources(query):
     link_dict = {website_titles[i]:website_links[i] for i in range(3)}
     return(link_dict)
 
-import spacy
-from spacy import displacy
-from collections import Counter
+def get_important_entities(text: str)->List[str]:
+    ollama.pull('llama3')
+    response = ollama.chat(model='llama3', messages=[
+      {
+        'role': 'user',
+        'content': f'Print out list of important entities mentioned in this text, "{text}"',
 
-nlp = spacy.load("en_core_web_md")
+      },
+      ], stream=True)
 
-contents = ""
-with open('big_lesson.txt', 'r') as f:
+    results = ""
+    for chunk in response:
+      print(chunk['message']['content'], end='', flush=True)
+      results += chunk['message']['content']
+
+    return results
+
+content = ""
+with open("big_lesson.txt", 'r') as f:
     for line in f.readlines():
-        contents += line
+        content += line
 
-nlp_doc = nlp(contents)
-labels = [x.text for x in nlp_doc.ents]
+entities = get_important_entities(content)
+print(entities)
 
-print(Counter(labels).most_common(20))
+
