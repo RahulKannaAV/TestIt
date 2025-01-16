@@ -1,5 +1,6 @@
 import logging
 import time
+import re
 from typing import List
 import ollama
 from selenium import webdriver
@@ -7,8 +8,9 @@ from selenium.webdriver.common.by import By
 from selenium.common import exceptions
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from enums.content_id import ContentID
 
-def get_top_resources(query):
+def get_top_resources(query, data):
     query_string = "+".join(query.split(" "))
 
     WEBDRIVER_URL = r"..\chromedriver-win64\chromedriver.exe"
@@ -21,8 +23,10 @@ def get_top_resources(query):
     website_titles = []
     website_links = []
 
+    by_content = ContentID(data['contentID']).value
+
     try:
-        targeted_elements = driver.find_elements(By.CSS_SELECTOR, "h3[class='LC20lb MBeuO DKV0Md']")
+        targeted_elements = driver.find_elements(by_content, "h3[class='LC20lb MBeuO DKV0Md']")
 
         for element in targeted_elements:
             website_titles.append(element.text)
@@ -47,7 +51,7 @@ def get_important_entities(text: str)->List[str]:
     response = ollama.chat(model='llama3', messages=[
       {
         'role': 'user',
-        'content': f'Print out list of important entities mentioned in this text, "{text}"',
+        'content': f'Print out list of 5 important entities mentioned in this text as python list, "{text}"',
 
       },
       ], stream=True)
@@ -57,7 +61,12 @@ def get_important_entities(text: str)->List[str]:
       print(chunk['message']['content'], end='', flush=True)
       results += chunk['message']['content']
 
-    return results
+    matches = re.findall(r'\[(.*?)\]', results)
+
+    # print(results)
+    entity_list = matches[0].split(",") if len(matches) > 0 else []
+
+    return entity_list
 
 content = ""
 with open("big_lesson.txt", 'r') as f:
@@ -65,6 +74,8 @@ with open("big_lesson.txt", 'r') as f:
         content += line
 
 entities = get_important_entities(content)
+
+
 print(entities)
 
 

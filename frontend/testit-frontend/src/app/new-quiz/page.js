@@ -6,19 +6,43 @@ import { Button } from "@mui/material";
 import Dropdown from "@/components/dropdown"
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 
 const QuizForm = () => {
     const [chosenType, setChosenType] = useState(""); 
+    const [formData, setFormData] = useState({
+        quizName: "",
+        quizURL: "",
+        contentID: "",
+        identifierText: ""
+    });
+
+
     const router = useRouter();   
     console.log(chosenType);
+    console.log(formData);
 
-    const handleCreation = () => {
+    // Sends input to the server
+    const sendContent = async() => {
+        try {
+            const response = await axios.post("http://localhost:5000/scrape-quiz-text", formData);
+            console.log(response.data);
+        } catch(e) {
+            console.error(`Error in sending form content: ${e}`)
+        }
+    }
+
+    const handleCreation = async() => {
         console.log("Redirecting to content website");
-        router.push({
+
+        // Sending form content to the server
+        await sendContent();
+
+        /*router.push({
             pathname: "/scraped-result",
             query: {content: "Hello World"}
-        })
+        })*/
     }
 
     return (
@@ -31,9 +55,9 @@ const QuizForm = () => {
                     CREATE <b>QUIZ</b>
                 </Typography>
 
-                <CustomTextField fieldText={"Quiz Name"}/>
+                <CustomTextField fieldText={"Quiz Name"} property={"quizName"} setter={setFormData}/>
 
-                <CustomTextField fieldText={"Quiz URL"} />
+                <CustomTextField fieldText={"Quiz URL"} property={"quizURL"} setter={setFormData}/>
 
                 <Dropdown 
                     changeFn={setChosenType}
@@ -42,7 +66,7 @@ const QuizForm = () => {
                     about={"Choose Content ID"}
                 />
 
-                <CustomTextField fieldText={"Identifier Text"} />
+                <CustomTextField fieldText={"Identifier Text"} property={"identifierText"} setter={setFormData}/>
                 
                 <div style={{
                     marginTop: "30px"
