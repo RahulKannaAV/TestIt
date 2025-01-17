@@ -1,13 +1,33 @@
 
 from authlib.integrations.flask_client import OAuth
-from flask import Flask, render_template, url_for
+from authlib.oauth2.client import OAuth2Client
+from flask import Flask, url_for, make_response, redirect, request, session
+from datetime import timedelta
 import os
+from flask import session
+from functools import wraps
+
+
+def login_required(f):
+    @wraps(f) # makes sure that function 'f' retains the correct metadata
+    def decorated_function(*args, **kwargs):
+        user = dict(session).get('email', None)
+        # You would add a check here and usethe user id or something to fetch
+        # the other data for that user/check if they exist
+        if user: # If user is there, it means user is authenticated
+            return f(*args, **kwargs)
+        return redirect("/")
+    return decorated_function
+
 
 # More Info : https://docs.authlib.org/en/latest/client/flask.html
 app = Flask(__name__)
 app.secret_key = "suckmydick"
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
+
 #Authlib
 oauth = OAuth(app)
+
 
 #Register google outh
 
@@ -25,6 +45,7 @@ google = oauth.register(
 
 @app.route("/")
 def index():
+    print(f"Before Login: {session.items()}")
     return "<a href='/google-login'>Login</a>"
 
 #Routes for login
@@ -39,10 +60,28 @@ def googleLogin():
 def authorize():
     token = oauth.google.authorize_access_token()
     user = token['userinfo']
-    print(user)
+    session['email'] = user['email']
+    session['username'] = user['given_name']
+    session['userID'] = "49642"
+    session.permanent = True
+    print(f"After Login: {session.items()}")
   # user will return a dict of info like: email = user.get("email")
     #Save the user info to database and login the user
-    return user
+    return redirect("/logged")
+
+@app.route("/logged")
+@login_required
+def logged_in(): # same as login_required(logged_in()), if true, returns logged_in, otherwise redirects to home
+    return "<div> <h1>You have successfully Logged In</h1> <a href='/logout'>Log Out</a> </div>"
+
+@app.route("/logout")
+def logout():
+    for key in list(session.keys()):
+        session.pop(key)
+
+    return redirect("/")
+
+
 
 if(__name__ == "__main__"):
     app.run(debug=True)
